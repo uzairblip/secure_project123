@@ -1,0 +1,12 @@
+# Django specific
+*.pyc
+__pycache__/
+db.sqlite3
+
+# Security - NEVER upload these
+.env
+.DS_Store
+
+# Environments
+venv/
+env/
