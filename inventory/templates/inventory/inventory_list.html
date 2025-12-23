@@ -1,0 +1,43 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Inventory Management</title>
+</head>
+<body>
+    <h2>Product Inventory</h2>
+
+    {% if user.is_superuser %}
+        <a href="{% url 'add_product' %}"><strong>[+ Add New Item]</strong></a> | 
+    {% endif %}
+
+    <a href="{% url 'dashboard' %}">Back to Dashboard</a>
+    <hr>
+
+    <table border="1" cellpadding="10">
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Quantity</th>
+                <th>Price (RM)</th>
+                <th>Added By</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td>{{ product.name }}</td>
+                <td>{{ product.quantity }}</td>
+                <td>RM {{ product.price }}</td>
+                <td>{{ product.created_by.username }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">No products found. Add one!</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

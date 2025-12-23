@@ -1,0 +1,69 @@
+/* Hacker/Security Theme */
+body {
+    background-color: #1e1e2f; /* Dark Blue-Grey */
+    color: #e0e0e0;            /* Light Grey Text */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 20px;
+    text-align: center;
+}
+
+h1, h2, h3 {
+    color: #00d4ff; /* Cyan Blue for Headers */
+}
+
+a {
+    color: #ff9f43; /* Orange for Links */
+    text-decoration: none;
+    font-weight: bold;
+}
+
+a:hover {
+    color: #ffcd85;
+    text-decoration: underline;
+}
+
+/* Tables */
+table {
+    margin: 0 auto; /* Center the table */
+    border-collapse: collapse;
+    width: 80%;
+    background-color: #27293d;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+th, td {
+    padding: 12px;
+    border-bottom: 1px solid #444;
+}
+
+th {
+    background-color: #00d4ff;
+    color: #1e1e2f;
+}
+
+tr:hover {
+    background-color: #33364a;
+}
+
+/* Forms & Buttons */
+input {
+    padding: 10px;
+    margin: 5px;
+    border-radius: 5px;
+    border: none;
+}
+
+button {
+    background-color: #00d4ff;
+    color: #1e1e2f;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+button:hover {
+    background-color: #00b8e6;
+}

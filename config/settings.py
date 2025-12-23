@@ -16,7 +16,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env()
 
 # 3. FORCE it to read the .env file from the main folder
-# This connects the file you found in your dir command
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 
@@ -25,11 +24,9 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 # ==============================================================================
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# Reads from .env file
 SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# Reads from .env file (Default to False for security)
 DEBUG = env.bool('DEBUG', default=False)
 
 ALLOWED_HOSTS = []
@@ -40,7 +37,8 @@ ALLOWED_HOSTS = []
 # ==============================================================================
 
 INSTALLED_APPS = [
-    'accounts',
+    'accounts',                 # Your Authentication App
+    'inventory',                # Your Inventory App
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -133,8 +131,13 @@ USE_TZ = True
 # ==============================================================================
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-# This was the missing line causing the error
 STATIC_URL = 'static/'
+
+# <--- THIS IS THE NEW PART YOU NEEDED --->
+# This tells Django to look inside the "static" folder you created
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
