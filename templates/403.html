@@ -1,0 +1,17 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Access Denied</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="container" style="margin-top: 50px;">
+        <h1 style="color: #ff4757; font-size: 50px;">403</h1>
+        <h3>⛔ Access Denied</h3>
+        <p>You do not have permission to view this page.</p>
+        <br>
+        <a href="{% url 'dashboard' %}" class="button">Return to Dashboard</a>
+    </div>
+</body>
+</html>
