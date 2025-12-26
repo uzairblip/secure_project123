@@ -1,0 +1,43 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Inventory System</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body style="text-align: center;">
+
+    <nav style="background-color: #27293d; padding: 15px; border-bottom: 1px solid #444; margin-bottom: 40px;">
+        <div style="max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+            
+            <a href="/" style="font-size: 24px; color: #00d4ff; text-decoration: none; font-weight: bold; letter-spacing: 1px;">
+                🛡️ SECURE SYSTEM
+            </a>
+            
+            <div>
+                {% if user.is_authenticated %}
+                    <span style="color: #e0e0e0; margin-right: 20px;">
+                        User: <strong style="color: #00d4ff;">{{ user.username }}</strong>
+                    </span>
+                    <a href="{% url 'dashboard' %}" style="color: #e0e0e0; margin-right: 20px;">Dashboard</a>
+                    
+                    <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" style="background-color: #ff5e57; padding: 5px 15px; font-size: 14px;">Logout</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'login' %}" style="color: #00d4ff;">Login</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div style="max-width: 1000px; margin: 0 auto;">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+</body>
+</html>
