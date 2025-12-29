@@ -146,3 +146,13 @@ EMAIL_USE_TLS = True
 # 🔒 SECURITY: These now read from your hidden .env file!
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+
+# settings.py (Paste this at the VERY BOTTOM of the file)
+
+# ==========================================
+# LOCAL DEVELOPMENT SETTINGS
+# ==========================================
+# Allow cookies to work on http://127.0.0.1 (Localhost)
+CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = False
+CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000', 'http://localhost:8000']
