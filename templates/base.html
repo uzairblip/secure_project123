@@ -21,7 +21,7 @@
                     <span style="color: #e0e0e0; margin-right: 20px;">
                         User: <strong style="color: #00d4ff;">{{ user.username }}</strong>
                     </span>
-                    <a href="{% url 'dashboard' %}" style="color: #e0e0e0; margin-right: 20px;">Dashboard</a>
+                    <a href="{% url 'inventory_list' %}" style="color: #e0e0e0; margin-right: 20px;">Dashboard</a>
                     
                     <form action="{% url 'logout' %}" method="post" style="display: inline;">
                         {% csrf_token %}

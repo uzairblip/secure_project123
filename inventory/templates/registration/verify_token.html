@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Security Verification</h2>
+<p>Please enter the token sent to your email (check your terminal/console).</p>
+
+{% if messages %}
+    <ul style="color: red;">
+        {% for message in messages %}<li>{{ message }}</li>{% endfor %}
+    </ul>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    <label>Enter Token:</label>
+    <input type="text" name="token" required placeholder="123456">
+    <button type="submit">Verify Token</button>
+</form>
+{% endblock %}

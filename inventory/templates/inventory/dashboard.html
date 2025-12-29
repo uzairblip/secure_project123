@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="text-align: center; padding-top: 50px;">
+    <h1 style="color: #00d4ff; margin-bottom: 40px;">Welcome, {{ user.username }}</h1>
+
+    <div style="display: flex; justify-content: center; gap: 30px;">
+        <div style="background-color: #27293d; padding: 40px; border-radius: 10px; width: 300px; border: 1px solid #444;">
+            <h2 style="color: #fff;">📦 Inventory</h2>
+            <p style="color: #aaa;">Add, View, and Delete Products.</p>
+            <br>
+            <a href="{% url 'inventory_list' %}" style="background-color: #00d4ff; color: #1e1e2f; padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 5px; display: inline-block;">Manage Inventory</a>
+        </div>
+
+        <div style="background-color: #27293d; padding: 40px; border-radius: 10px; width: 300px; border: 1px solid #444;">
+            <h2 style="color: #ff5e57;">⚙️ System Admin</h2>
+            <p style="color: #aaa;">Manage Users & Permissions.</p>
+            <br>
+            <a href="{% url 'admin:index' %}" style="background-color: #ff5e57; color: #fff; padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 5px; display: inline-block;">System Admin Panel</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
