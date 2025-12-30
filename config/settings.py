@@ -1,10 +1,12 @@
 """
 Django settings for config project.
 Modified for Security to use .env file for credentials via python-dotenv.
+Includes certifi fix for secure 2FA email transmission.
 """
 
 from pathlib import Path
 import os
+import certifi # 🛡️ STEP 1: Import certifi to handle SSL certificates
 from dotenv import load_dotenv
 
 # 1. Define BASE_DIR
@@ -18,12 +20,8 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 # SECURITY CONFIGURATION
 # ==============================================================================
 
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-key')
-
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
-
 ALLOWED_HOSTS = []
 
 
@@ -32,7 +30,7 @@ ALLOWED_HOSTS = []
 # ==============================================================================
 
 INSTALLED_APPS = [
-    'inventory',                # <--- YOUR APP
+    'inventory',                # Your App
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -89,20 +87,13 @@ DATABASES = {
 # ==============================================================================
 
 AUTH_PASSWORD_VALIDATORS = [
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        # 👇 UPDATED: Enforce Minimum 8 Characters
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
         'OPTIONS': {'min_length': 8},
     },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
 
@@ -121,10 +112,7 @@ USE_TZ = True
 # ==============================================================================
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
-
+STATICFILES_DIRS = [BASE_DIR / "static"]
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
@@ -140,22 +128,22 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
+# 🛡️ STEP 2: Use certifi to verify SSL certificates
+EMAIL_SSL_CAFILE = certifi.where()
+
 
 # ==============================================================================
 # 🛡️ SECURITY HARDENING (AUTO-LOGOUT & SESSION RULES)
 # ==============================================================================
 
-# 1. AUTO-LOGOUT: Session expires after 600 seconds (10 Minutes) of inactivity
+# Session expires after 10 Minutes of inactivity
 SESSION_COOKIE_AGE = 600 
-
-# 2. CLOSE-TO-LOGOUT: Session dies when browser closes
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
-# 3. SECURE COOKIES: Prevent JavaScript from stealing cookies (XSS Protection)
+# XSS Protection for Cookies
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
 
-# 4. SESSION ENGINE: Store sessions in DB (More secure than cookies)
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 
@@ -163,8 +151,6 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 # LOCAL DEVELOPMENT SETTINGS
 # ==============================================================================
 
-# Allow cookies to work on http://127.0.0.1 (Localhost)
-# Note: In production (HTTPS), set these to True!
 CSRF_COOKIE_SECURE = False
 SESSION_COOKIE_SECURE = False
 CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000', 'http://localhost:8000']
