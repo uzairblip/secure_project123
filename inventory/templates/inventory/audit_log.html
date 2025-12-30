@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="padding: 20px;">
+    <h2 style="color: #ff5e57; margin-bottom: 20px;">👮 Security Audit Logs</h2>
+
+    <table border="1" cellpadding="10" style="width: 100%; border-collapse: collapse; color: #fff; border-color: #444;">
+        <thead>
+            <tr style="background-color: #27293d; color: #00d4ff;">
+                <th>Time</th>
+                <th>User</th>
+                <th>Action</th>
+                <th>Target Item</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr style="border-bottom: 1px solid #444;">
+                <td>{{ log.timestamp|date:"Y-m-d H:i:s" }}</td>
+                
+                <td style="color: #ffd700; font-weight: bold;">{{ log.user.username }}</td>
+                
+                <td>
+                    {% if "Deleted" in log.action %}
+                        <span style="color: #ff5e57; font-weight: bold;">{{ log.action }}</span> {% else %}
+                        <span style="color: #00ff00; font-weight: bold;">{{ log.action }}</span> {% endif %}
+                </td>
+                
+                <td>{{ log.target }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" style="text-align: center; color: #aaa;">No activity recorded yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <br>
+    <a href="{% url 'dashboard' %}" style="color: #aaa; text-decoration: none;">← Back to Dashboard</a>
+</div>
+{% endblock %}

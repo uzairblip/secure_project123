@@ -3,38 +3,48 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Inventory System</title>
+    <title>SECURE SYSTEM</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body style="text-align: center;">
 
-    <nav style="background-color: #27293d; padding: 15px; border-bottom: 1px solid #444; margin-bottom: 40px;">
-        <div style="max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
-            
-            <a href="/" style="font-size: 24px; color: #00d4ff; text-decoration: none; font-weight: bold; letter-spacing: 1px;">
-                🛡️ SECURE SYSTEM
-            </a>
-            
-            <div>
-                {% if user.is_authenticated %}
-                    <span style="color: #e0e0e0; margin-right: 20px;">
-                        User: <strong style="color: #00d4ff;">{{ user.username }}</strong>
-                    </span>
-                    <a href="{% url 'inventory_list' %}" style="color: #e0e0e0; margin-right: 20px;">Dashboard</a>
-                    
-                    <form action="{% url 'logout' %}" method="post" style="display: inline;">
-                        {% csrf_token %}
-                        <button type="submit" style="background-color: #ff5e57; padding: 5px 15px; font-size: 14px;">Logout</button>
-                    </form>
-                {% else %}
-                    <a href="{% url 'login' %}" style="color: #00d4ff;">Login</a>
-                {% endif %}
-            </div>
+    <nav class="navbar" style="background-color: #27293d; padding: 15px; border-bottom: 2px solid #00d4ff; display: flex; justify-content: space-between; align-items: center; padding: 10px 50px; margin-bottom: 40px;">
+        <div style="font-size: 24px; font-weight: bold; color: #00d4ff;">
+            <i class="fas fa-shield-alt"></i> SECURE SYSTEM
+        </div>
+        
+        <div style="display: flex; align-items: center; gap: 20px;">
+            {% if user.is_authenticated %}
+                <span style="color: #e0e0e0;">
+                    User: <strong style="color: #00d4ff;">{{ user.username }}</strong>
+                </span>
+                <a href="{% url 'dashboard' %}" style="color: #ff9f43; text-decoration: none;">Dashboard</a>
+                
+                <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" style="background-color: #ff5e57; color: white; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                        LOGOUT
+                    </button>
+                </form>
+            {% else %}
+                <a href="{% url 'login' %}" style="color: #00d4ff;">Login</a>
+                <a href="{% url 'signup' %}" style="background-color: #00d4ff; color: #1e1e2f; padding: 8px 20px; border-radius: 5px; text-decoration: none; font-weight: bold;">Sign Up</a>
+            {% endif %}
         </div>
     </nav>
 
-    <div style="max-width: 1000px; margin: 0 auto;">
+    {% if messages %}
+        <div style="margin-bottom: 30px;">
+            {% for message in messages %}
+                <div style="background-color: #00d4ff; color: #1e1e2f; padding: 10px; display: inline-block; border-radius: 5px; font-weight: bold; box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
         {% block content %}
         {% endblock %}
     </div>

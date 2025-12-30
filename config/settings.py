@@ -5,13 +5,12 @@ Modified for Security to use .env file for credentials via python-dotenv.
 
 from pathlib import Path
 import os
-from dotenv import load_dotenv  # <--- Using the tool you installed
+from dotenv import load_dotenv
 
 # 1. Define BASE_DIR
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # 2. Load environment variables from .env file
-# This tells Django to open the .env file and read the secrets
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 
@@ -20,11 +19,9 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 # ==============================================================================
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# Now reads from .env, with a fallback for safety
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# Checks .env, defaults to True if missing
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = []
@@ -35,8 +32,7 @@ ALLOWED_HOSTS = []
 # ==============================================================================
 
 INSTALLED_APPS = [
-    # 'accounts',               # <--- DISABLED (Old App)
-    'inventory',                # <--- YOUR NEW APP
+    'inventory',                # <--- YOUR APP
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -89,7 +85,7 @@ DATABASES = {
 
 
 # ==============================================================================
-# PASSWORD VALIDATION
+# PASSWORD VALIDATION (ENFORCED STRONG PASSWORDS)
 # ==============================================================================
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -97,7 +93,9 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
     {
+        # 👇 UPDATED: Enforce Minimum 8 Characters
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {'min_length': 8},
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
@@ -113,11 +111,8 @@ AUTH_PASSWORD_VALIDATORS = [
 # ==============================================================================
 
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
 
@@ -126,7 +121,6 @@ USE_TZ = True
 # ==============================================================================
 
 STATIC_URL = 'static/'
-
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
@@ -143,16 +137,34 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-# 🔒 SECURITY: These now read from your hidden .env file!
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
-# settings.py (Paste this at the VERY BOTTOM of the file)
 
-# ==========================================
+# ==============================================================================
+# 🛡️ SECURITY HARDENING (AUTO-LOGOUT & SESSION RULES)
+# ==============================================================================
+
+# 1. AUTO-LOGOUT: Session expires after 600 seconds (10 Minutes) of inactivity
+SESSION_COOKIE_AGE = 600 
+
+# 2. CLOSE-TO-LOGOUT: Session dies when browser closes
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+# 3. SECURE COOKIES: Prevent JavaScript from stealing cookies (XSS Protection)
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = True
+
+# 4. SESSION ENGINE: Store sessions in DB (More secure than cookies)
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+
+
+# ==============================================================================
 # LOCAL DEVELOPMENT SETTINGS
-# ==========================================
+# ==============================================================================
+
 # Allow cookies to work on http://127.0.0.1 (Localhost)
+# Note: In production (HTTPS), set these to True!
 CSRF_COOKIE_SECURE = False
 SESSION_COOKIE_SECURE = False
 CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000', 'http://localhost:8000']

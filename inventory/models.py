@@ -12,3 +12,13 @@ class Product(models.Model):
     
     def __str__(self):
         return f"{self.name} (Qty: {self.quantity})"
+
+# --- NEW: AUDIT LOG TABLE ---
+class AuditLog(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    action = models.CharField(max_length=50)  # e.g., "Added", "Deleted"
+    target = models.CharField(max_length=100) # e.g., "iPhone 15"
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user} - {self.action} - {self.timestamp}"

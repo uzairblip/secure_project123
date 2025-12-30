@@ -1,15 +1,35 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+
 {% block content %}
-<h2>Login</h2>
-{% if messages %}
-    <ul style="color: red;">
-        {% for message in messages %}<li>{{ message }}</li>{% endfor %}
-    </ul>
-{% endif %}
-<form method="post">
-    {% csrf_token %}
-    <label>Username:</label> <input type="text" name="username" required><br>
-    <label>Password:</label> <input type="password" name="password" required><br>
-    <button type="submit">Next Step (2FA)</button>
-</form>
+<div style="display: flex; justify-content: center; align-items: center; min-height: 70vh;">
+    <div class="form-container" style="width: 100%; max-width: 400px; margin: 0;">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <i class="fas fa-user-lock" style="font-size: 3rem; color: var(--accent); margin-bottom: 15px;"></i>
+            <h2 style="margin: 0;">System Access</h2>
+            <p style="color: var(--text-dim); font-size: 0.9rem;">Identity Verification Required</p>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %} <div class="form-group">
+                <label><i class="fas fa-user"></i> Username</label>
+                <input type="text" name="username" required placeholder="Enter ID...">
+            </div>
+
+            <div class="form-group">
+                <label><i class="fas fa-key"></i> Password</label>
+                <input type="password" name="password" required placeholder="••••••••">
+            </div>
+
+            <button type="submit" class="btn btn-cyan" style="width: 100%; justify-content: center; margin-top: 10px;">
+                INITIATE LOGIN <i class="fas fa-sign-in-alt"></i>
+            </button>
+        </form>
+
+        <div style="margin-top: 25px; text-align: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+            <p style="color: var(--text-dim); font-size: 0.8rem;">New operative? 
+                <a href="{% url 'signup' %}" style="color: var(--orange);">Request Access</a>
+            </p>
+        </div>
+    </div>
+</div>
 {% endblock %}

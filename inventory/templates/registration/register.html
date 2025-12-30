@@ -1,10 +1,67 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+
 {% block content %}
-<h2>Create an Account</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Sign Up</button>
-</form>
-<p>Already have an account? <a href="{% url 'login' %}">Log in here</a>.</p>
+<div style="display: flex; justify-content: center; align-items: center; min-height: 80vh;">
+    <div class="form-container" style="width: 100%; max-width: 500px; margin: 0;">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <i class="fas fa-user-plus" style="font-size: 3rem; color: var(--accent); margin-bottom: 15px;"></i>
+            <h2 style="margin: 0;">Account Creation</h2>
+            <p style="color: var(--text-dim); font-size: 0.9rem;">Secure Enrollment Protocol</p>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="secure-form-fields">
+                {{ form.as_p }}
+            </div>
+
+            <button type="submit" class="btn btn-cyan" style="width: 100%; justify-content: center; margin-top: 20px;">
+                REGISTER ACCOUNT <i class="fas fa-user-shield"></i>
+            </button>
+        </form>
+
+        <div style="margin-top: 25px; text-align: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+            <p style="color: var(--text-dim); font-size: 0.8rem;">Already have access? 
+                <a href="{% url 'login' %}" style="color: var(--accent);">Proceed to Login</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Styling the Django-generated 'as_p' fields to match our tech theme */
+    .secure-form-fields p {
+        margin-bottom: 15px;
+        text-align: left;
+    }
+    .secure-form-fields label {
+        display: block;
+        color: var(--text-dim);
+        font-size: 0.8rem;
+        margin-bottom: 5px;
+        text-transform: uppercase;
+        font-weight: bold;
+    }
+    .secure-form-fields input {
+        width: 100%;
+        padding: 12px;
+        background: var(--bg);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 8px;
+        color: white;
+        box-sizing: border-box;
+    }
+    .secure-form-fields input:focus {
+        border-color: var(--accent);
+        outline: none;
+        box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
+    }
+    .helptext {
+        display: block;
+        font-size: 0.7rem;
+        color: var(--text-dim);
+        margin-top: 5px;
+    }
+</style>
 {% endblock %}

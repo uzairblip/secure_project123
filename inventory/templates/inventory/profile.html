@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="padding: 40px; max-width: 900px; margin: 0 auto;">
+    
+    <h1 style="color: #00d4ff; margin-bottom: 30px; border-bottom: 1px solid #444; padding-bottom: 10px;">
+        👤 My Profile
+    </h1>
+
+    <div style="display: flex; gap: 30px;">
+        
+        <div style="flex: 1; background-color: #27293d; padding: 30px; border-radius: 10px; border: 1px solid #444; height: fit-content;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="font-size: 50px; margin-bottom: 10px;">🧑‍💻</div>
+                <h2 style="color: #fff; margin: 0;">{{ user.username }}</h2>
+                <p style="color: #aaa;">{{ user.email }}</p>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #444; margin: 20px 0;">
+
+            <div style="margin-bottom: 15px;">
+                <strong style="color: #00d4ff;">Role:</strong>
+                {% if user.is_superuser %}
+                    <span style="background-color: #ff5e57; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px;">Super Admin</span>
+                {% elif user.is_staff %}
+                    <span style="background-color: #ffeb3b; color: #1e1e2f; padding: 2px 8px; border-radius: 4px; font-size: 12px;">Staff</span>
+                {% else %}
+                    <span style="background-color: #aaa; color: #1e1e2f; padding: 2px 8px; border-radius: 4px; font-size: 12px;">User</span>
+                {% endif %}
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <strong style="color: #00d4ff;">Date Joined:</strong>
+                <span style="color: #ddd;">{{ user.date_joined|date:"M d, Y" }}</span>
+            </div>
+
+            <div style="margin-bottom: 25px;">
+                <strong style="color: #00d4ff;">Last Login:</strong>
+                <span style="color: #ddd;">{{ user.last_login|timesince }} ago</span>
+            </div>
+
+            <a href="{% url 'change_password' %}" 
+               style="display: block; text-align: center; background-color: #ff9f43; color: #1e1e2f; padding: 10px; border-radius: 5px; text-decoration: none; font-weight: bold;">
+               🔒 Change Password
+            </a>
+        </div>
+
+        <div style="flex: 2;">
+            <h3 style="color: #fff; margin-top: 0;">🕒 My Recent Activity</h3>
+            
+            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                {% for log in user_logs %}
+                <tr style="border-bottom: 1px solid #333;">
+                    <td style="padding: 15px 0; color: #00d4ff; font-weight: bold;">
+                        {{ log.action }}
+                    </td>
+                    <td style="padding: 15px 0; color: #ddd;">
+                        {{ log.target }}
+                    </td>
+                    <td style="padding: 15px 0; color: #aaa; text-align: right; font-size: 14px;">
+                        {{ log.timestamp|date:"M d, H:i" }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" style="color: #aaa; padding: 20px 0;">No recent activity recorded.</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+
+    </div>
+    
+    <br><br>
+    <a href="{% url 'dashboard' %}" style="color: #aaa; text-decoration: none;">← Back to Dashboard</a>
+
+</div>
+{% endblock %}
