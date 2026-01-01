@@ -1,36 +1,31 @@
-"""
-Django settings for config project.
-Modified for Security to use .env file for credentials via python-dotenv.
-Includes certifi fix for secure 2FA email transmission.
-"""
-
-from pathlib import Path
 import os
-import certifi # 🛡️ STEP 1: Import certifi to handle SSL certificates
+from pathlib import Path
+import certifi
 from dotenv import load_dotenv
 
-# 1. Define BASE_DIR
+# 1. BASE DIRECTORY
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# 2. Load environment variables from .env file
+# 2. LOAD SECURE CREDENTIALS FROM .ENV
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 
-
 # ==============================================================================
-# SECURITY CONFIGURATION
+# 🛡️ CORE SECURITY CONFIGURATION
 # ==============================================================================
-
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-key')
-DEBUG = os.getenv('DEBUG', 'True') == 'True'
-ALLOWED_HOSTS = []
 
+# 🛡️ Mandatory for production: DEBUG=False prevents URL pattern disclosure
+DEBUG = False 
+
+# 🛡️ Required when DEBUG is False to verify the host
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 # ==============================================================================
-# APPLICATION DEFINITION
+# 📦 APPLICATION DEFINITION
 # ==============================================================================
-
 INSTALLED_APPS = [
-    'inventory',                # Your App
+    'inventory',
+    'captcha',                  # 🛡️ Anti-Automation / Bot Protection
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -40,13 +35,13 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
+    'django.middleware.security.SecurityMiddleware',  # 🛡️ Stays at top for header processing
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware', # 🛡️ Anti-Clickjacking
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -54,7 +49,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'], 
+        'DIRS': [BASE_DIR / 'templates'], # 🛡️ Django looks here for your 403/404.html
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -69,11 +64,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-
 # ==============================================================================
-# DATABASE
+# 💾 DATABASE & CACHING (BRUTE-FORCE PROTECTION)
 # ==============================================================================
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -81,10 +74,21 @@ DATABASES = {
     }
 }
 
+# 🛡️ Database-backed Cache used for the 3-strike lockout policy
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'login_lockout_cache',
+    }
+}
 
 # ==============================================================================
-# PASSWORD VALIDATION (ENFORCED STRONG PASSWORDS)
+# 🔐 AUTHENTICATION & REDIRECTION
 # ==============================================================================
+# 🛡️ Fixes the redirection loop to default "accounts/login/"
+LOGIN_URL = '/inventory/login/'
+LOGIN_REDIRECT_URL = '/inventory/'
+LOGOUT_REDIRECT_URL = '/inventory/login/'
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -96,61 +100,46 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
+# ==============================================================================
+# 🛡️ BROWSER SECURITY HEADERS (OWASP HARDENING)
+# ==============================================================================
+X_FRAME_OPTIONS = 'DENY'
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
+
+SESSION_COOKIE_HTTPONLY = True   # 🛡️ Prevents JS from accessing session cookies
+CSRF_COOKIE_HTTPONLY = True      # 🛡️ Prevents JS from accessing CSRF tokens
+SESSION_COOKIE_AGE = 600         # 🛡️ Auto-logout after 10 minutes
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 # ==============================================================================
-# INTERNATIONALIZATION
+# 📧 EMAIL CONFIGURATION (SECURE 2FA)
 # ==============================================================================
-
-LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
-USE_I18N = True
-USE_TZ = True
-
-
-# ==============================================================================
-# STATIC FILES (CSS, JavaScript, Images)
-# ==============================================================================
-
-STATIC_URL = 'static/'
-STATICFILES_DIRS = [BASE_DIR / "static"]
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-
-# ==============================================================================
-# EMAIL CONFIGURATION (SECURE .ENV)
-# ==============================================================================
-
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-
-# 🛡️ STEP 2: Use certifi to verify SSL certificates
-EMAIL_SSL_CAFILE = certifi.where()
-
+EMAIL_SSL_CAFILE = certifi.where() 
 
 # ==============================================================================
-# 🛡️ SECURITY HARDENING (AUTO-LOGOUT & SESSION RULES)
+# 📁 STATIC & MEDIA FILES
 # ==============================================================================
+STATIC_URL = 'static/'
+STATICFILES_DIRS = [BASE_DIR / "static"]
 
-# Session expires after 10 Minutes of inactivity
-SESSION_COOKIE_AGE = 600 
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+# 🛡️ Mandatory for DEBUG=False to serve assets correctly
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# XSS Protection for Cookies
-SESSION_COOKIE_HTTPONLY = True
-CSRF_COOKIE_HTTPONLY = True
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ==============================================================================
-# LOCAL DEVELOPMENT SETTINGS
+# LOCAL DEVELOPMENT (SSL OFF FOR LOCALHOST)
 # ==============================================================================
-
 CSRF_COOKIE_SECURE = False
 SESSION_COOKIE_SECURE = False
 CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000', 'http://localhost:8000']

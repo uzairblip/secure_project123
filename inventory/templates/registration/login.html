@@ -3,16 +3,33 @@
 {% block content %}
 <div style="display: flex; justify-content: center; align-items: center; min-height: 70vh;">
     <div class="form-container" style="width: 100%; max-width: 400px; margin: 0;">
+        
         <div style="text-align: center; margin-bottom: 30px;">
             <i class="fas fa-user-lock" style="font-size: 3rem; color: var(--accent); margin-bottom: 15px;"></i>
             <h2 style="margin: 0;">System Access</h2>
             <p style="color: var(--text-dim); font-size: 0.9rem;">Identity Verification Required</p>
         </div>
 
+        {% if error %}
+            <div style="background: rgba(255, 94, 87, 0.1); color: #ff5e57; padding: 12px; border-radius: 8px; border: 1px solid #ff5e57; margin-bottom: 20px; font-size: 0.85rem; text-align: center;">
+                <i class="fas fa-exclamation-triangle"></i> {{ error }}
+            </div>
+        {% endif %}
+
+        {% if messages %}
+            {% for message in messages %}
+                <div style="background: rgba(255, 235, 59, 0.1); color: #ffeb3b; padding: 12px; border-radius: 8px; border: 1px solid #ffeb3b; margin-bottom: 20px; font-size: 0.85rem; text-align: center;">
+                    <i class="fas fa-info-circle"></i> {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
         <form method="POST">
-            {% csrf_token %} <div class="form-group">
+            {% csrf_token %} 
+            
+            <div class="form-group">
                 <label><i class="fas fa-user"></i> Username</label>
-                <input type="text" name="username" required placeholder="Enter ID...">
+                <input type="text" name="username" required placeholder="Enter ID..." autocomplete="off">
             </div>
 
             <div class="form-group">
@@ -20,16 +37,50 @@
                 <input type="password" name="password" required placeholder="••••••••">
             </div>
 
-            <button type="submit" class="btn btn-cyan" style="width: 100%; justify-content: center; margin-top: 10px;">
-                INITIATE LOGIN <i class="fas fa-sign-in-alt"></i>
+            <div class="form-group" style="background: rgba(0, 255, 255, 0.05); padding: 15px; border-radius: 8px; border: 1px dashed var(--accent);">
+                <label style="color: var(--accent);"><i class="fas fa-robot"></i> Anti-Bot Verification</label>
+                
+                <div class="captcha-wrapper" style="display: flex; flex-direction: column; gap: 10px; align-items: center; margin-top: 10px;">
+                    <div style="position: relative; cursor: pointer;" class="captcha-container" title="Click to refresh">
+                        <img src="{{ captcha_url }}" alt="captcha" class="captcha" style="border-radius: 4px; border: 1px solid var(--accent); display: block;">
+                        <i class="fas fa-sync-alt" style="position: absolute; top: -5px; right: -5px; background: var(--accent); color: var(--bg); border-radius: 50%; padding: 4px; font-size: 0.6rem;"></i>
+                    </div>
+                    
+                    <input type="text" name="captcha_1" required placeholder="Enter code" 
+                           style="text-align: center; letter-spacing: 3px; font-weight: bold; text-transform: lowercase;">
+                    
+                    <input type="hidden" name="captcha_0" value="{{ captcha_key }}">
+                </div>
+                
+                <p style="font-size: 0.7rem; color: var(--text-dim); margin-top: 8px; text-align: center; opacity: 0.8;">
+                    Prove you are an operative, not a script.
+                </p>
+            </div>
+
+            <button type="submit" class="btn btn-cyan" style="width: 100%; justify-content: center; margin-top: 10px; font-weight: bold; letter-spacing: 1px;">
+                INITIATE LOGIN <i class="fas fa-sign-in-alt" style="margin-left: 8px;"></i>
             </button>
         </form>
 
         <div style="margin-top: 25px; text-align: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
             <p style="color: var(--text-dim); font-size: 0.8rem;">New operative? 
-                <a href="{% url 'signup' %}" style="color: var(--orange);">Request Access</a>
+                <a href="{% url 'signup' %}" style="color: var(--orange); text-decoration: none; font-weight: bold;">Request Access</a>
             </p>
         </div>
     </div>
 </div>
+
+<script>
+    // Handles clicking the image OR the refresh icon to reload the CAPTCHA
+    const refreshCaptcha = () => {
+        fetch('/captcha/refresh/')
+            .then(res => res.json())
+            .then(data => {
+                document.querySelector('.captcha').src = data.image_url;
+                document.querySelector('input[name="captcha_0"]').value = data.key;
+            });
+    };
+
+    document.querySelector('.captcha-container').addEventListener('click', refreshCaptcha);
+</script>
 {% endblock %}

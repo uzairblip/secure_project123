@@ -12,18 +12,19 @@
         </a>
     </p>
 
-    <div class="dashboard-grid">
+    <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));">
+        
         <div class="card">
             <div style="display:flex; justify-content: space-between; align-items: flex-start;">
                 <div>
                     <h4 style="color: var(--text-dim); margin:0; text-align: left;">ACTIVE PRODUCTS</h4>
-                    <h2 style="font-size: 3.5rem; margin: 0.5rem 0; text-align: left;">{{ total_products }}</h2>
+                    <h2 style="font-size: 3rem; margin: 0.5rem 0; text-align: left;">{{ total_products }}</h2>
                 </div>
                 <div style="background: rgba(0, 212, 255, 0.1); padding: 1.2rem; border-radius: 15px;">
                     <i class="fas fa-box-open" style="color: var(--accent); font-size: 1.8rem;"></i>
                 </div>
             </div>
-            <div style="color: var(--accent); font-size: 0.9rem; text-align: left; margin-top: 1rem;">
+            <div style="color: var(--accent); font-size: 0.8rem; text-align: left; margin-top: 1rem;">
                 <i class="fas fa-check-circle"></i> Database Online
             </div>
         </div>
@@ -32,7 +33,7 @@
             <div style="display:flex; justify-content: space-between; align-items: flex-start;">
                 <div>
                     <h4 style="color: var(--text-dim); margin:0; text-align: left;">STOCK ALERTS</h4>
-                    <h2 style="font-size: 3.5rem; margin: 0.5rem 0; text-align: left; color: {% if low_stock > 0 %}var(--danger){% else %}#fff{% endif %};">
+                    <h2 style="font-size: 3rem; margin: 0.5rem 0; text-align: left; color: {% if low_stock > 0 %}var(--danger){% else %}#fff{% endif %};">
                         {{ low_stock }}
                     </h2>
                 </div>
@@ -41,34 +42,79 @@
                 </div>
             </div>
             <p style="text-align: left; font-size: 0.8rem; color: var(--text-dim); margin-top: 1rem;">
-                {% if low_stock > 0 %}Immediate attention required{% else %}All stock levels nominal{% endif %}
+                {% if low_stock > 0 %}Immediate attention required{% else %}Levels nominal{% endif %}
+            </p>
+        </div>
+
+        <div class="card" style="border-left: 4px solid var(--orange);">
+            <div style="display:flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <h4 style="color: var(--text-dim); margin:0; text-align: left;">AUDIT TRAIL</h4>
+                    <h2 style="font-size: 3rem; margin: 0.5rem 0; text-align: left; color: #fff;">{{ total_logs }}</h2>
+                </div>
+                <div style="background: rgba(255, 159, 67, 0.1); padding: 1.2rem; border-radius: 15px;">
+                    <i class="fas fa-history" style="color: var(--orange); font-size: 1.8rem;"></i>
+                </div>
+            </div>
+            <div style="color: var(--orange); font-size: 0.8rem; text-align: left; margin-top: 1rem;">
+                <i class="fas fa-fingerprint"></i> Activity Tracked
+            </div>
+        </div>
+
+        <div class="card" style="border-left: 4px solid {% if security_alerts > 0 %}var(--danger){% else %}#2ed573{% endif %};">
+            <div style="display:flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <h4 style="color: var(--text-dim); margin:0; text-align: left;">SECURITY ALERTS</h4>
+                    <h2 style="font-size: 3rem; margin: 0.5rem 0; text-align: left; color: {% if security_alerts > 0 %}var(--danger){% else %}#2ed573{% endif %};">
+                        {{ security_alerts }}
+                    </h2>
+                </div>
+                <div style="background: rgba(255, 94, 87, 0.1); padding: 1.2rem; border-radius: 15px;">
+                    <i class="fas fa-shield-virus" style="color: {% if security_alerts > 0 %}var(--danger){% else %}#2ed573{% endif %}; font-size: 1.8rem;"></i>
+                </div>
+            </div>
+            <p style="text-align: left; font-size: 0.8rem; color: var(--text-dim); margin-top: 1rem;">
+                {% if security_alerts > 0 %}Brute-force blocked{% else %}Threat monitor clean{% endif %}
             </p>
         </div>
     </div>
 
-    <div class="dashboard-grid">
+    <div class="dashboard-grid" style="margin-top: 2rem;">
         <div class="card" style="text-align: left;">
             <h3 style="margin-top: 0;"><i class="fas fa-warehouse" style="color: var(--accent); margin-right: 10px;"></i> Inventory Control</h3>
             <p style="color: var(--text-dim); margin-bottom: 2rem; line-height: 1.6;">
-                Secure CRUD operations for the inventory database. Protected by Django ORM against SQL Injection.
+                Secure CRUD operations for the inventory database. Protected by Django ORM and Category classification.
             </p>
-            <a href="{% url 'inventory_list' %}" class="btn btn-cyan">
-                Manage Inventory <i class="fas fa-arrow-right"></i>
-            </a>
+            <div style="display: flex; gap: 10px;">
+                <a href="{% url 'inventory_list' %}" class="btn btn-cyan">
+                    Manage Inventory <i class="fas fa-arrow-right"></i>
+                </a>
+                {% if user.is_superuser %}
+                <a href="{% url 'export_csv' %}" class="btn" style="background: #2ed573; color: #1e1e2f;">
+                    <i class="fas fa-file-csv"></i> Export
+                </a>
+                {% endif %}
+            </div>
         </div>
 
         {% if user.is_superuser %}
         <div class="card" style="text-align: left; background: linear-gradient(145deg, #1a1f29, #151921); border-color: rgba(255, 94, 87, 0.3);">
             <h3 style="margin-top: 0; color: var(--danger);"><i class="fas fa-user-shield" style="margin-right: 10px;"></i> Security & Admin</h3>
             <p style="color: var(--text-dim); margin-bottom: 2rem; line-height: 1.6;">
-                Restrict access, manage system operatives, and review secure audit logs for suspicious activity.
+                Identity management and audit oversight. Monitor blocked bot attempts and login lockouts.
             </p>
             <div style="display:flex; gap: 15px;">
-                <a href="{% url 'user_list' %}" class="btn" style="background: rgba(255,255,255,0.05); color:#fff; border: 1px solid rgba(255,255,255,0.1);">Users</a>
-                <a href="{% url 'audit_log' %}" class="btn" style="background: rgba(255,255,255,0.05); color:var(--orange); border: 1px solid rgba(255, 159, 67, 0.2);">Audit Logs</a>
+                <a href="{% url 'user_list' %}" class="btn" style="background: rgba(255,255,255,0.05); color:#fff; border: 1px solid rgba(255,255,255,0.1);">Operatives</a>
+                <a href="{% url 'audit_log' %}" class="btn" style="background: rgba(255,255,255,0.05); color:var(--orange); border: 1px solid rgba(255, 159, 67, 0.2);">Incident Logs</a>
             </div>
         </div>
         {% endif %}
+    </div>
+
+    <div style="margin-top: 3rem; padding: 1rem; background: rgba(0,212,255,0.03); border-radius: 10px; border: 1px solid rgba(0,212,255,0.1); display: inline-block;">
+        <p style="color: var(--accent); font-size: 0.8rem; margin: 0; letter-spacing: 1px;">
+            <i class="fas fa-circle-notch fa-spin"></i> LIVE MONITORING ACTIVE | SECURE TUNNEL ESTABLISHED
+        </p>
     </div>
 </div>
 {% endblock %}

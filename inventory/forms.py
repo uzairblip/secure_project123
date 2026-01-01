@@ -1,15 +1,22 @@
 from django import forms
-from .models import Product
+from .models import Product, Category
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
 # ==========================================
-# 1. PRODUCT FORM (Your Existing Code)
+# 1. PRODUCT FORM (Updated for Feature #2)
 # ==========================================
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['name', 'quantity', 'price']
+        # 🛡️ Added 'category' and 'image' to the fields list
+        fields = ['name', 'category', 'quantity', 'price', 'image']
+        
+        # Adding some styling classes to match your high-tech theme
+        widgets = {
+            'category': forms.Select(attrs={'class': 'form-control'}),
+            'image': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+        }
 
     # This function runs automatically to BLOCK negative numbers
     def clean_price(self):
@@ -19,7 +26,7 @@ class ProductForm(forms.ModelForm):
         return price
 
 # ==========================================
-# 2. SIGNUP FORM (New - Adds Email Field)
+# 2. SIGNUP FORM (Mandatory Email)
 # ==========================================
 class SignUpForm(UserCreationForm):
     # This adds the Email box to the form and makes it mandatory

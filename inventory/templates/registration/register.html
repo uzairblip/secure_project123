@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div style="display: flex; justify-content: center; align-items: center; min-height: 80vh;">
+<div style="display: flex; justify-content: center; align-items: center; min-height: 80vh; padding: 20px;">
     <div class="form-container" style="width: 100%; max-width: 500px; margin: 0;">
         <div style="text-align: center; margin-bottom: 30px;">
             <i class="fas fa-user-plus" style="font-size: 3rem; color: var(--accent); margin-bottom: 15px;"></i>
@@ -9,59 +9,125 @@
             <p style="color: var(--text-dim); font-size: 0.9rem;">Secure Enrollment Protocol</p>
         </div>
 
+        {% if form.errors %}
+            <div style="background: rgba(255, 94, 87, 0.1); color: #ff5e57; padding: 10px; border-radius: 8px; border: 1px solid #ff5e57; margin-bottom: 20px; font-size: 0.8rem;">
+                <i class="fas fa-exclamation-circle"></i> Verification failed. Please check your credentials.
+            </div>
+        {% endif %}
+
         <form method="POST">
             {% csrf_token %}
             
             <div class="secure-form-fields">
-                {{ form.as_p }}
+                {% for field in form %}
+                    <p>
+                        {{ field.label_tag }}
+                        {{ field }}
+                        {% if field.name == "password1" %}
+                            <div id="password-strength-container" style="margin-top: 8px; display: none;">
+                                <div style="height: 6px; width: 100%; background: #333; border-radius: 10px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05);">
+                                    <div id="strength-bar" style="height: 100%; width: 0%; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+                                    <small id="strength-text" style="font-size: 0.7rem; font-weight: bold;"></small>
+                                    <small style="font-size: 0.65rem; color: var(--text-dim);">Min 8 chars + mix cases</small>
+                                </div>
+                            </div>
+                        {% endif %}
+                        {% if field.help_text %}
+                            <small class="helptext">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <small style="color: #ff5e57; font-size: 0.7rem; display: block; margin-top: 2px;">⚠️ {{ error }}</small>
+                        {% endfor %}
+                    </p>
+                {% endfor %}
             </div>
 
-            <button type="submit" class="btn btn-cyan" style="width: 100%; justify-content: center; margin-top: 20px;">
-                REGISTER ACCOUNT <i class="fas fa-user-shield"></i>
+            <div class="form-group" style="background: rgba(0, 255, 255, 0.05); padding: 15px; border-radius: 8px; border: 1px dashed var(--accent); margin-top: 20px;">
+                <label style="color: var(--accent); font-size: 0.8rem; text-transform: uppercase; font-weight: bold; display: block; margin-bottom: 10px;">
+                    <i class="fas fa-robot"></i> Anti-Bot Verification
+                </label>
+                
+                <div class="captcha-wrapper" style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                    <div style="position: relative; cursor: pointer;" title="Click to refresh captcha" class="captcha-img-container">
+                        <img src="{{ captcha_url }}" alt="captcha" class="captcha" style="border-radius: 4px; border: 1px solid var(--accent);">
+                        <i class="fas fa-sync-alt" style="position: absolute; top: -5px; right: -5px; background: var(--accent); color: var(--bg); border-radius: 50%; padding: 4px; font-size: 0.6rem;"></i>
+                    </div>
+                    
+                    <input type="text" name="captcha_1" required placeholder="Enter verification code" 
+                           style="width: 100%; padding: 12px; background: var(--bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; text-align: center; letter-spacing: 3px; font-weight: bold;">
+                    
+                    <input type="hidden" name="captcha_0" value="{{ captcha_key }}">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-cyan" style="width: 100%; justify-content: center; margin-top: 25px; font-weight: bold; letter-spacing: 1px;">
+                REGISTER ACCOUNT <i class="fas fa-user-shield" style="margin-left: 8px;"></i>
             </button>
         </form>
 
         <div style="margin-top: 25px; text-align: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
             <p style="color: var(--text-dim); font-size: 0.8rem;">Already have access? 
-                <a href="{% url 'login' %}" style="color: var(--accent);">Proceed to Login</a>
+                <a href="{% url 'login' %}" style="color: var(--accent); text-decoration: none; font-weight: bold;">Proceed to Login</a>
             </p>
         </div>
     </div>
 </div>
 
-<style>
-    /* Styling the Django-generated 'as_p' fields to match our tech theme */
-    .secure-form-fields p {
-        margin-bottom: 15px;
-        text-align: left;
+<script>
+    // 📊 Password Strength Logic
+    const passwordInput = document.querySelector('input[name="password1"]');
+    const strengthBar = document.getElementById('strength-bar');
+    const strengthText = document.getElementById('strength-text');
+    const strengthContainer = document.getElementById('password-strength-container');
+
+    if (passwordInput) {
+        passwordInput.addEventListener('input', function() {
+            let pass = this.value;
+            let strength = 0;
+            strengthContainer.style.display = pass ? 'block' : 'none';
+
+            if (pass.length >= 8) strength++;
+            if (/[A-Z]/.test(pass)) strength++;
+            if (/[0-9]/.test(pass)) strength++;
+            if (/[^A-Za-z0-9]/.test(pass)) strength++;
+
+            const colors = ['#ff5e57', '#ffa502', '#eccc68', '#2ed573'];
+            const labels = ['Insecure', 'Fair', 'Good', 'Strong'];
+
+            strengthBar.style.width = (strength * 25) + '%';
+            strengthBar.style.backgroundColor = colors[strength - 1] || '#333';
+            strengthText.innerText = labels[strength - 1] || 'Insecure';
+            strengthText.style.color = colors[strength - 1] || '#888';
+        });
     }
+
+    // 🤖 CAPTCHA Refresh Logic
+    document.querySelector('.captcha-img-container').addEventListener('click', function() {
+        const img = this.querySelector('.captcha');
+        const hiddenInput = this.parentElement.querySelector('input[type="hidden"]');
+        
+        fetch('/captcha/refresh/')
+            .then(res => res.json())
+            .then(data => {
+                img.src = data.image_url;
+                hiddenInput.value = data.key;
+            });
+    });
+</script>
+
+<style>
+    .secure-form-fields p { margin-bottom: 15px; text-align: left; }
     .secure-form-fields label {
-        display: block;
-        color: var(--text-dim);
-        font-size: 0.8rem;
-        margin-bottom: 5px;
-        text-transform: uppercase;
-        font-weight: bold;
+        display: block; color: var(--text-dim); font-size: 0.8rem; margin-bottom: 5px; text-transform: uppercase; font-weight: bold;
     }
     .secure-form-fields input {
-        width: 100%;
-        padding: 12px;
-        background: var(--bg);
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 8px;
-        color: white;
-        box-sizing: border-box;
+        width: 100%; padding: 12px; background: var(--bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; box-sizing: border-box; transition: 0.3s;
     }
     .secure-form-fields input:focus {
-        border-color: var(--accent);
-        outline: none;
-        box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
+        border-color: var(--accent); outline: none; box-shadow: 0 0 10px rgba(0, 212, 255, 0.1); background: rgba(0, 212, 255, 0.02);
     }
-    .helptext {
-        display: block;
-        font-size: 0.7rem;
-        color: var(--text-dim);
-        margin-top: 5px;
-    }
+    .helptext { display: block; font-size: 0.65rem; color: var(--text-dim); margin-top: 5px; line-height: 1.4; opacity: 0.7; }
 </style>
 {% endblock %}

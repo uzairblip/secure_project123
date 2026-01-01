@@ -22,7 +22,7 @@
             {% if user.is_staff or user.is_superuser %}
             <a href="{% url 'add_product' %}" 
                style="background-color: #ffeb3b; color: #1e1e2f; padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 5px; display: flex; align-items: center;">
-               + Add
+               + Add Product
             </a>
             {% endif %}
             
@@ -32,8 +32,8 @@
     <table border="1" cellpadding="15" style="width: 100%; border-collapse: collapse; color: #fff; border-color: #444;">
         <thead>
             <tr style="background-color: #27293d; color: #00d4ff;">
-                <th>Product Name</th>
-                <th>Quantity</th>
+                <th>Preview</th> <th>Product Name</th>
+                <th>Category</th> <th>Quantity</th>
                 <th>Price</th>
                 <th>Added By</th>
                 
@@ -44,8 +44,27 @@
         </thead>
         <tbody>
             {% for product in products %}
-            <tr style="border-bottom: 1px solid #444; hover: background-color: #333;">
+            <tr style="border-bottom: 1px solid #444; transition: background 0.3s;" onmouseover="this.style.backgroundColor='#333'" onmouseout="this.style.backgroundColor='transparent'">
+                
+                <td style="text-align: center;">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" 
+                             style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px; border: 1px solid var(--accent);">
+                    {% else %}
+                        <div style="width: 50px; height: 50px; background: #444; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #888;">
+                            NO IMG
+                        </div>
+                    {% endif %}
+                </td>
+
                 <td style="font-weight: bold;">{{ product.name }}</td>
+                
+                <td>
+                    <span style="background: rgba(0, 212, 255, 0.1); color: #00d4ff; padding: 4px 8px; border-radius: 4px; font-size: 12px; border: 1px solid rgba(0, 212, 255, 0.3);">
+                        {{ product.category.name|default:"Uncategorized" }}
+                    </span>
+                </td>
+
                 <td>{{ product.quantity }}</td>
                 <td style="color: #00ff00;">RM {{ product.price }}</td>
                 <td style="color: #aaa;">{{ product.created_by.username }}</td>
@@ -72,8 +91,8 @@
             </tr>
             {% empty %}
             <tr>
-                <td colspan="5" style="text-align: center; color: #aaa; padding: 30px;">
-                    No products found.
+                <td colspan="7" style="text-align: center; color: #aaa; padding: 30px;">
+                    No products found in the database.
                 </td>
             </tr>
             {% endfor %}

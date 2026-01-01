@@ -4,7 +4,7 @@
 <div class="form-container">
     <h2>Add New Product</h2>
     
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         
         {% for field in form %}
