@@ -1,6 +1,6 @@
 import sys
 import csv
-import secrets  # 🛡️ NEW: For cryptographically strong random numbers
+import secrets  # 🛡️ Cryptographically strong random numbers
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, update_session_auth_hash 
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -9,7 +9,6 @@ from .forms import ProductForm, SignUpForm
 from django.core.mail import send_mail
 from django.contrib import messages
 from django.contrib.auth.models import User
-from django.db.models import Sum
 from django.http import HttpResponse
 from .models import Product, AuditLog 
 
@@ -39,6 +38,7 @@ def inventory_list(request):
     products = Product.objects.all()
     query = request.GET.get('q')
     if query:
+        # [cite_start]🛡️ ORM prevents SQL Injection [cite: 96]
         products = products.filter(name__icontains=query)
     return render(request, 'inventory/inventory_list.html', {'products': products})
 
@@ -89,6 +89,8 @@ def export_inventory_csv(request):
     products = Product.objects.all()
     for product in products:
         writer.writerow([product.name, product.quantity, product.price, product.created_by.username])
+    
+    # [cite_start]🛡️ Audit logging for sensitive data export [cite: 125]
     AuditLog.objects.create(user=request.user, action="Exported Data", target="All Inventory (CSV)")
     return response
 
@@ -131,9 +133,14 @@ def delete_user(request, user_id):
 # =========================================
 
 def register_view_safe(request):
+    # 🛡️ FIXED: form initialized here to prevent UnboundLocalError
+    form = SignUpForm() 
+
     if request.method == 'POST':
         hashkey = request.POST.get('captcha_0')
         response = request.POST.get('captcha_1')
+        
+        # [cite_start]🛡️ CAPTCHA Validation for bot protection [cite: 75]
         if not CaptchaStore.objects.filter(hashkey=hashkey, response=response.lower()).exists():
             messages.error(request, "Invalid CAPTCHA - Registration Blocked.")
         else:
@@ -148,8 +155,6 @@ def register_view_safe(request):
                 request.session['reg_token'] = token
                 send_mail('Verify Your Account', f'Your token: {token}', 'uzairsamsudin123@gmail.com', [user.email], fail_silently=False)
                 return redirect('verify_registration')
-    else:
-        form = SignUpForm()
     
     new_key = CaptchaStore.generate_key()
     return render(request, 'registration/register.html', {
@@ -163,28 +168,28 @@ def custom_login(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         
-        # 🛡️ 1. IMMEDIATE LOCKOUT CHECK (Priority for the Audit Script)
+        # [cite_start]🛡️ 1. Brute-force lockout check [cite: 125]
         if cache.get(f'lockout_{username}'):
             context['error'] = "Account locked for 15 minutes due to multiple failures."
             return render(request, 'registration/login.html', context)
 
-        # 🛡️ 2. TRACK ATTEMPTS IMMEDIATELY
+        # 🛡️ 2. Track failed attempts
         attempts = cache.get(f'attempts_{username}', 0) + 1
         cache.set(f'attempts_{username}', attempts, 600)
 
         if attempts >= 3:
             cache.set(f'lockout_{username}', True, 900)
             context['error'] = "Account locked due to 3 failed attempts."
-            AuditLog.objects.create(user=None, action="SECURITY ALERT", target=f"Lockout triggered for: {username}")
+            AuditLog.objects.create(user=None, action="SECURITY ALERT", target=f"Lockout: {username}")
             return render(request, 'registration/login.html', context)
 
-        # 🛡️ 3. CAPTCHA VALIDATION
+        # 🛡️ 3. Bot Detection
         hashkey = request.POST.get('captcha_0')
         response = request.POST.get('captcha_1')
         if not CaptchaStore.objects.filter(hashkey=hashkey, response=response.lower()).exists():
             messages.error(request, "Invalid CAPTCHA - Bot detected!")
         else:
-            # 🛡️ 4. AUTHENTICATION
+            # 🛡️ 4. Multi-factor Authentication flow
             user = authenticate(request, username=username, password=request.POST.get('password'))
             if user is not None:
                 if not user.is_active:
@@ -200,7 +205,6 @@ def custom_login(request):
                 send_mail('Login Token', f'Your 2FA token: {token}', 'uzairsamsudin123@gmail.com', [user.email], fail_silently=False)
                 return redirect('verify_login')
             else:
-                sys.stderr.write(f"\n⚠️ SECURITY ALERT: FAILED LOGIN ({attempts}/3) -> {username}\n")
                 messages.error(request, f"Invalid credentials. {3-attempts} attempts left.")
 
     new_key = CaptchaStore.generate_key()
@@ -239,19 +243,12 @@ def verify_login(request):
 
 @login_required
 def dashboard_view(request):
-    # Inventory Stats
-    total_products = Product.objects.count()
-    low_stock = Product.objects.filter(quantity__lt=5).count()
-    
-    # Security Stats for the Command Center
-    total_logs = AuditLog.objects.count()
-    security_alerts = AuditLog.objects.filter(action="SECURITY ALERT").count()
-    
+    # [cite_start]Aggregating metrics for the dashboard [cite: 91]
     context = {
-        'total_products': total_products, 
-        'low_stock': low_stock,
-        'total_logs': total_logs,
-        'security_alerts': security_alerts
+        'total_products': Product.objects.count(), 
+        'low_stock': Product.objects.filter(quantity__lt=5).count(),
+        'total_logs': AuditLog.objects.count(),
+        'security_alerts': AuditLog.objects.filter(action="SECURITY ALERT").count()
     }
     return render(request, 'inventory/dashboard.html', context)
 
@@ -262,8 +259,7 @@ def dashboard_view(request):
 @login_required
 def profile_view(request):
     user_logs = AuditLog.objects.filter(user=request.user).order_by('-timestamp')[:5]
-    context = {'user_logs': user_logs}
-    return render(request, 'inventory/profile.html', context)
+    return render(request, 'inventory/profile.html', {'user_logs': user_logs})
 
 @login_required
 def change_password(request):
@@ -280,7 +276,7 @@ def change_password(request):
     return render(request, 'registration/change_password.html', {'form': form})
 
 # =========================================
-# 5. ERROR HANDLERS
+# [cite_start]5. ERROR HANDLERS [cite: 108]
 # =========================================
 
 def custom_404(request, exception):

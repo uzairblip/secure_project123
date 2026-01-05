@@ -11,7 +11,9 @@ urlpatterns = [
     path('add/', views.add_product, name='add_product'),
     path('edit/<int:product_id>/', views.edit_product, name='edit_product'),
     path('delete/<int:product_id>/', views.delete_product, name='delete_product'),
-    path('export/', views.export_inventory_csv, name='export_inventory'),
+    
+    # 🛡️ FIXED: Name changed to 'export_csv' to match your dashboard template 
+    path('export/', views.export_inventory_csv, name='export_csv'),
 
     # --- SYSTEM ADMIN (LOGS & USERS) ---
     path('history/', views.audit_log_view, name='audit_log'),
@@ -19,7 +21,7 @@ urlpatterns = [
     path('users/promote/<int:user_id>/', views.toggle_staff_status, name='toggle_staff'),
     path('users/delete/<int:user_id>/', views.delete_user, name='delete_user'),
 
-    # --- 👤 NEW: PROFILE & SETTINGS ---
+    # --- 👤 PROFILE & SETTINGS ---
     path('profile/', views.profile_view, name='profile'),
     path('profile/password/', views.change_password, name='change_password'),
 

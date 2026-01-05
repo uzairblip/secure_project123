@@ -6,26 +6,27 @@ from dotenv import load_dotenv
 # 1. BASE DIRECTORY
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# 2. LOAD SECURE CREDENTIALS FROM .ENV
+# 2. LOAD SECURE CREDENTIALS FROM .ENV [cite: 119]
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 # ==============================================================================
-# 🛡️ CORE SECURITY CONFIGURATION
+# 🛡️ CORE SECURITY CONFIGURATION [cite: 66, 69]
 # ==============================================================================
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-key')
 
-# 🛡️ Mandatory for production: DEBUG=False prevents URL pattern disclosure
+# 🛠️ TEMPORARILY SET TO TRUE TO FIND THE LOGIN/CAPTCHA BUG
+# Note: Revert to False for final submission to hide system maps [cite: 107, 120]
 DEBUG = False 
 
-# 🛡️ Required when DEBUG is False to verify the host
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+# 🛡️ Required for validation; added '*' for easier local debugging [cite: 66]
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '*']
 
 # ==============================================================================
 # 📦 APPLICATION DEFINITION
 # ==============================================================================
 INSTALLED_APPS = [
     'inventory',
-    'captcha',                  # 🛡️ Anti-Automation / Bot Protection
+    'captcha',                  # 🛡️ Anti-Automation / Bot Protection [cite: 75]
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -35,13 +36,13 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',  # 🛡️ Stays at top for header processing
+    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',     # 🛡️ CSRF Protection [cite: 101, 185]
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware', # 🛡️ Anti-Clickjacking
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -49,7 +50,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'], # 🛡️ Django looks here for your 403/404.html
+        'DIRS': [BASE_DIR / 'templates'], # 🛡️ Location of custom 403/404.html 
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -65,16 +66,16 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # ==============================================================================
-# 💾 DATABASE & CACHING (BRUTE-FORCE PROTECTION)
+# 💾 DATABASE & CACHING (BRUTE-FORCE PROTECTION) [cite: 125]
 # ==============================================================================
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3', # 🛡️ Uses ORM for SQLi prevention [cite: 96, 179]
     }
 }
 
-# 🛡️ Database-backed Cache used for the 3-strike lockout policy
+# 🛡️ Cache used for the 3-strike login lockout policy [cite: 125]
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
@@ -83,13 +84,13 @@ CACHES = {
 }
 
 # ==============================================================================
-# 🔐 AUTHENTICATION & REDIRECTION
+# 🔐 AUTHENTICATION & REDIRECTION [cite: 98]
 # ==============================================================================
-# 🛡️ Fixes the redirection loop to default "accounts/login/"
 LOGIN_URL = '/inventory/login/'
 LOGIN_REDIRECT_URL = '/inventory/'
 LOGOUT_REDIRECT_URL = '/inventory/login/'
 
+# 🛡️ Strong password rules enforced [cite: 99]
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {
@@ -101,19 +102,20 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # ==============================================================================
-# 🛡️ BROWSER SECURITY HEADERS (OWASP HARDENING)
+# 🛡️ BROWSER SECURITY HEADERS (OWASP HARDENING) [cite: 102]
 # ==============================================================================
-X_FRAME_OPTIONS = 'DENY'
-SECURE_CONTENT_TYPE_NOSNIFF = True
-SECURE_BROWSER_XSS_FILTER = True
+X_FRAME_OPTIONS = 'DENY'            # 🛡️ Anti-Clickjacking [cite: 103]
+SECURE_CONTENT_TYPE_NOSNIFF = True  # 🛡️ Prevent MIME-sniffing [cite: 102, 114]
+SECURE_BROWSER_XSS_FILTER = True    # 🛡️ XSS Protection [cite: 132, 134]
 
-SESSION_COOKIE_HTTPONLY = True   # 🛡️ Prevents JS from accessing session cookies
-CSRF_COOKIE_HTTPONLY = True      # 🛡️ Prevents JS from accessing CSRF tokens
-SESSION_COOKIE_AGE = 600         # 🛡️ Auto-logout after 10 minutes
+# 🛡️ Secure Session Cookies [cite: 102]
+SESSION_COOKIE_HTTPONLY = True   
+CSRF_COOKIE_HTTPONLY = True      
+SESSION_COOKIE_AGE = 600         # 🛡️ 10-minute timeout [cite: 100]
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 # ==============================================================================
-# 📧 EMAIL CONFIGURATION (SECURE 2FA)
+# 📧 EMAIL CONFIGURATION (SECURE 2FA) [cite: 109, 112]
 # ==============================================================================
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
@@ -124,16 +126,14 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 EMAIL_SSL_CAFILE = certifi.where() 
 
 # ==============================================================================
-# 📁 STATIC & MEDIA FILES
+# 📁 STATIC & MEDIA FILES (FILE UPLOAD SECURITY) [cite: 113]
 # ==============================================================================
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
-
-# 🛡️ Mandatory for DEBUG=False to serve assets correctly
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = BASE_DIR / 'staticfiles' # 🛡️ MANDATORY destination for collectstatic
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = BASE_DIR / 'media'         # 🛡️ Stored outside web root [cite: 116]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
